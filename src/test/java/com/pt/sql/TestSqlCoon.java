@@ -28,7 +28,7 @@ public class TestSqlCoon
         {
             Class.forName(driverClass);
             connection = DriverManager.getConnection(url, username, password);
-            PreparedStatement preparedStatement = connection.prepareStatement("insert into user values ('1','pt')");
+            PreparedStatement preparedStatement = connection.prepareStatement("insert into user values ('2','zz')");
             preparedStatement.execute();
         } catch (Exception e)
         {

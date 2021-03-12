@@ -18,7 +18,12 @@ public class SystemAssert
             throw PtException.error(statusEnum);
         }
     }
-
+    /**
+     * 如果第一个参数为false 抛出异常
+     * 否则继续往下执行
+     * @param flag
+     * @param msg
+     */
     public static void isTrue(boolean flag,String msg){
         if (!flag)
         {
