@@ -1,0 +1,29 @@
+appid: zrunframrwork
+spring:
+  application:
+    name: zrunframrwork
+  datasource:
+    driverClassName: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost/test
+server:
+  port: 9000
+  #是否开启全局异常捕捉
+  exception:
+    capture: true
+
+
+test: 78979
+
+ab:
+  cd:
+    ef:
+      gh:
+        nr: 9
+
+
+netty:
+  option: 1024
+
+
+
+
