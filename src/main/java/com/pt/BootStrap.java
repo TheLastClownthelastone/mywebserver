@@ -7,6 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * 启动器
  */
+
 public class BootStrap
 {
     public static void main(String[] args) throws InvocationTargetException, IntrospectionException, InstantiationException, IllegalAccessException

@@ -2,6 +2,7 @@ package com.pt.init;
 import cn.hutool.core.lang.ClassScaner;
 import com.pt.annotation.Component;
 import com.pt.annotation.Controller;
+import com.pt.annotation.Mapper;
 import com.pt.annotation.Service;
 import com.pt.context.DefaultBeanContext;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +43,7 @@ public class InitExecutor
             Set<Class<?>> controllers = ClassScaner.scanPackageByAnnotation(name, Controller.class);
             Set<Class<?>> services = ClassScaner.scanPackageByAnnotation(name, Service.class);
             Set<Class<?>> components = ClassScaner.scanPackageByAnnotation(name, Component.class);
+            Set<Class<?>> mappers = ClassScaner.scanPackageByAnnotation(name, Mapper.class);
             for (Class<?> controller : controllers)
             {
                 result.add(controller);
@@ -54,6 +56,11 @@ public class InitExecutor
             {
                 result.add(component);
             }
+            for (Class<?> mapper : mappers)
+            {
+                result.add(mapper);
+            }
+
             // 初始化上下文
             DefaultBeanContext.doInt(result);
         }

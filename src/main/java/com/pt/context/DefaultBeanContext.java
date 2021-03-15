@@ -4,6 +4,7 @@ import com.pt.annotation.Aspect;
 import com.pt.annotation.AutoWire;
 import com.pt.annotation.Component;
 import com.pt.annotation.Controller;
+import com.pt.annotation.Mapper;
 import com.pt.annotation.PTJob;
 import com.pt.annotation.RequestMapping;
 import com.pt.annotation.Service;
@@ -14,6 +15,7 @@ import com.pt.exception.SystemStatusEnum;
 import com.pt.handler.Handler;
 import com.pt.handler.TimerTaskHandler;
 import com.pt.router.RouterInfo;
+import com.pt.sql.SqlAnnoHandler;
 import com.pt.task.Task;
 import com.pt.task.TaskInfo;
 import com.pt.util.CharUtil;
@@ -64,6 +66,9 @@ public class DefaultBeanContext implements BeanContext
     private static ThreadPoolExecutor executor = AsynchronousHodler.executor;
 
     private DefaultBeanContext(){}
+
+
+    private static SqlAnnoHandler sqlAnnoHandler = SqlAnnoHandler.getInstance();
 
 
     /**
@@ -192,17 +197,14 @@ public class DefaultBeanContext implements BeanContext
                 Controller controller = ((Controller) annotation);
                 name = controller.value();
             }
-            else if (annotation instanceof Service)
+           if (annotation instanceof Service)
             {
                 Service service = ((Service) annotation);
                 name = service.value();
-            }else if(annotation instanceof Component){
+            }
+           if(annotation instanceof Component){
                 Component component = ((Component) annotation);
                 name = component.value();
-            }
-            else {
-                // 如果不是这两种类型的不做处理
-                continue;
             }
             Object o = clazz.newInstance();
             if (StringUtils.isNotEmpty(name))
@@ -214,6 +216,17 @@ public class DefaultBeanContext implements BeanContext
                 String s = CharUtil.toLowerCaseFirstOne(simpleName);
                 beanMap.put(s,o);
             }
+
+            // 当注解为@Mapper 注解的时候走cglib给接口进行实例
+            if (annotation instanceof Mapper)
+            {
+                String simpleName = clazz.getSimpleName();
+                String s = CharUtil.toLowerCaseFirstOne(simpleName);
+                Object o1 = sqlAnnoHandler.executeSqlToBean(clazz);
+                beanMap.put(s,o1);
+            }
+
+
         }
     }
     /**

@@ -19,7 +19,9 @@ public class SqlSessionFactory
 
 
     private static Connection connection;
-
+    /**
+     * 在静态块中进行加载数据库连接
+     */
     static {
         try
         {
@@ -51,5 +53,12 @@ public class SqlSessionFactory
         return DefaultSession.getInstance();
     }
 
+    /**
+     * 获取连接
+     * @return
+     */
+    public static Connection getConnection(){
+        return connection;
+    }
 
 }
