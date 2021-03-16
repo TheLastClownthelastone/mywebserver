@@ -2,6 +2,7 @@ package com.pt.init;
 import cn.hutool.core.lang.ClassScaner;
 import com.pt.annotation.Component;
 import com.pt.annotation.Controller;
+import com.pt.annotation.EnableRedisService;
 import com.pt.annotation.Mapper;
 import com.pt.annotation.Service;
 import com.pt.context.DefaultBeanContext;
@@ -60,9 +61,10 @@ public class InitExecutor
             {
                 result.add(mapper);
             }
-
+            // 是否开启redis服务
+            boolean isOpenRedis = clazz.isAnnotationPresent(EnableRedisService.class);
             // 初始化上下文
-            DefaultBeanContext.doInt(result);
+            DefaultBeanContext.doInt(result,isOpenRedis);
         }
     }
 

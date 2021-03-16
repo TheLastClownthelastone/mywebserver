@@ -11,6 +11,7 @@ import com.pt.excaplem.service.MainService;
 import com.pt.util.CommonResult;
 
 import java.util.List;
+import java.util.Map;
 @Controller
 @RequestMapping("/pt")
 public class MainController
@@ -42,4 +43,9 @@ public class MainController
         return CommonResult.success(mainService.getAllUser());
     }
 
+
+    @RequestMapping(value = "hgetAll",method = SystemConstant.HttpMethod.GET)
+    public CommonResult<List<Map<String,String>>> hgetAll(){
+        return CommonResult.success(mainService.hgetAll());
+    }
 }

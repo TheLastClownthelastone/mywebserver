@@ -38,4 +38,15 @@ public class Test1
         String put = map.put("1", "3");
         System.out.println(put);
     }
+
+    @Test
+    public void test3(){
+        String str = "username,shouce.ren,password,shouce.ren,points,200,";
+        String[] split = str.split(",");
+        for (String s : split)
+        {
+            System.out.println(s);
+        }
+        System.out.println(split.length);
+    }
 }

@@ -14,6 +14,7 @@ import com.pt.constant.SystemConstant;
 import com.pt.exception.SystemStatusEnum;
 import com.pt.handler.Handler;
 import com.pt.handler.TimerTaskHandler;
+import com.pt.redis.RedisTemplate;
 import com.pt.router.RouterInfo;
 import com.pt.sql.SqlAnnoHandler;
 import com.pt.task.Task;
@@ -79,7 +80,7 @@ public class DefaultBeanContext implements BeanContext
      * 执行改方法之后将class模板锁住不让多线程下出现同时修改出现的问题
      * 增加全局
      */
-    public static void doInt(Set<Class<?>> clazzs) throws InstantiationException, IllegalAccessException, IntrospectionException, InvocationTargetException
+    public static void doInt(Set<Class<?>> clazzs,boolean isOpenRedis) throws InstantiationException, IllegalAccessException, IntrospectionException, InvocationTargetException
     {
         synchronized (DefaultBeanContext.class){
             if (!isInit)
@@ -87,27 +88,34 @@ public class DefaultBeanContext implements BeanContext
                 for (Class<?> clazz : clazzs)
                 {
                     // 1.将对象赋值到map中
-                    initBean(clazz);
+                    initBean(clazz,isOpenRedis);
                 }
-                // 2.依赖注入
-                injectAnnotation();
-
-                // 3.路由键记录
-                initRouterKey();
-
-                // 4. 加载配置文件中的值
-                initValue();
-
-                // 5.是否开启aspect
-                checkAspect();
-
-                // 6.扫描所有的定时任务
-                scanTimingTask();
-
-                if (taskList.size() > SystemConstant.IsInt.NO.getCode())
+                for (Map.Entry<String, Object> entry : beanMap.entrySet())
                 {
-                    // 存在定时任务的时候执行定时任务
-                    handler.handler(executor);
+                    Object value = entry.getValue();
+                    if (value != null)
+                    {
+                        // 2.依赖注入
+                        injectAnnotation(value);
+
+                        // 3.路由键记录
+                        initRouterKey(value);
+
+                        // 4. 加载配置文件中的值
+                        initValue(value);
+
+                        // 5.是否开启aspect
+                        checkAspect(value);
+
+                        // 6.扫描所有的定时任务
+                        scanTimingTask(value);
+
+                        if (taskList.size() > SystemConstant.IsInt.NO.getCode())
+                        {
+                            // 存在定时任务的时候执行定时任务
+                            handler.handler(executor);
+                        }
+                    }
                 }
 
                 // 执行完之后设置标识
@@ -119,21 +127,13 @@ public class DefaultBeanContext implements BeanContext
     /**
      * 进行依赖注入可以通过 set方法注入方式 可以通过成员变量注入的方式
      */
-    private static void injectAnnotation() throws IntrospectionException, InvocationTargetException, IllegalAccessException
+    private static void injectAnnotation(Object bean) throws IntrospectionException, InvocationTargetException, IllegalAccessException
     {
         log.info("【开始执行依赖注入】》》》》》》》》》》》》》");
-        for (Map.Entry<String, Object> entry : beanMap.entrySet())
-        {
-            Object bean = entry.getValue();
-            if (bean != null)
-            {
-                // set方法注入
-                propertyAnnotation(bean);
-                // 属性注入
-                fieldAnnotation(bean);
-            }
-
-        }
+        // set方法注入
+        propertyAnnotation(bean);
+        // 属性注入
+        fieldAnnotation(bean);
     }
     /**
      * 获取bean
@@ -185,10 +185,17 @@ public class DefaultBeanContext implements BeanContext
      * 初始化bean
      * @param clazz
      */
-    private static void initBean(Class<?> clazz) throws IllegalAccessException, InstantiationException
+    private static void initBean(Class<?> clazz,boolean isOpenRedis) throws IllegalAccessException, InstantiationException
     {
         log.info("【初始化bean】。。。。。。。。。。");
         List<Annotation> annotations = Arrays.asList(clazz.getAnnotations());
+        // 判断是否开启redis服务
+        if (isOpenRedis)
+        {
+            RedisTemplate instance = RedisTemplate.getInstance();
+            beanMap.put("redisTemplate",instance);
+        }
+
         for (Annotation annotation : annotations)
         {
             String name = null;
@@ -225,8 +232,6 @@ public class DefaultBeanContext implements BeanContext
                     beanMap.put(s,o);
                 }
             }
-
-
         }
     }
     /**
@@ -315,16 +320,9 @@ public class DefaultBeanContext implements BeanContext
     /**
      * 初始化路由键
      */
-    private static void initRouterKey()
+    private static void initRouterKey(Object value)
     {
-        for (Map.Entry<String, Object> entry : beanMap.entrySet())
-        {
-            Object value = entry.getValue();
-            if (value != null)
-            {
-                configRouter(value);
-            }
-        }
+        configRouter(value);
     }
     /**
      * 将方法和类 跟路由进行配置
@@ -365,16 +363,9 @@ public class DefaultBeanContext implements BeanContext
     /**
      * 将配置文件中的内容注入到含有@Value对应的注解的属性中
      */
-    private static void initValue() throws IllegalAccessException
+    private static void initValue(Object value) throws IllegalAccessException
     {
-        for (Map.Entry<String, Object> entry : beanMap.entrySet())
-        {
-            Object value = entry.getValue();
-            if (value != null)
-            {
-                propertyInjection(value);
-            }
-        }
+        propertyInjection(value);
 
     }
     /**
@@ -410,25 +401,18 @@ public class DefaultBeanContext implements BeanContext
     /**
      * 检查是否开启aop
      */
-    private static void checkAspect()
+    private static void checkAspect(Object value)
     {
-        for (Map.Entry<String, Object> entry : beanMap.entrySet())
+        Class<?> aClass = value.getClass();
+        boolean annotationPresent = aClass.isAnnotationPresent(Aspect.class);
+        /**
+         * 判断一个是不是某个接口下面的实现
+         * 通过接口.class.isAssignableFrom(具体类的类型)
+         */
+        boolean assignableFrom = Advice.class.isAssignableFrom(aClass);
+        if (assignableFrom && annotationPresent)
         {
-            Object value = entry.getValue();
-            if (value != null)
-            {
-                Class<?> aClass = value.getClass();
-                boolean annotationPresent = aClass.isAnnotationPresent(Aspect.class);
-                /**
-                 * 判断一个是不是某个接口下面的实现
-                 * 通过接口.class.isAssignableFrom(具体类的类型)
-                 */
-                boolean assignableFrom = Advice.class.isAssignableFrom(aClass);
-                if (assignableFrom && annotationPresent)
-                {
-                    aspect = true;
-                }
-            }
+            aspect = true;
         }
     }
     /**
@@ -466,15 +450,8 @@ public class DefaultBeanContext implements BeanContext
     /**
      * 扫描定时任务
      */
-    private static void scanTimingTask(){
-        for (Map.Entry<String, Object> entry : beanMap.entrySet())
-        {
-            Object value = entry.getValue();
-            if (value != null)
-            {
-                configTimingTask(value);
-            }
-        }
+    private static void scanTimingTask(Object value){
+        configTimingTask(value);
     }
     /**
      * 将所有的定时任务进行初始化操作

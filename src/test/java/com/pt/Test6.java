@@ -3,6 +3,7 @@ import com.pt.beans.TestWaitAndNotifyBean;
 import com.pt.util.DateUtil;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 /**
@@ -108,5 +109,18 @@ public class Test6
         System.out.println("通过date对象获取到的毫秒值为："+new Date().getTime());
     }
 
+
+    @Test
+    public void test8(){
+        String str = "1  2";
+        String[] split = str.split("\\s");
+        System.out.println(Arrays.toString(split));
+        System.out.println(str);
+    }
+
+    @Test
+    public void test9(){
+        System.out.println(0 % 2);
+    }
 
 }
