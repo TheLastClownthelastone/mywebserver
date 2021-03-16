@@ -206,17 +206,6 @@ public class DefaultBeanContext implements BeanContext
                 Component component = ((Component) annotation);
                 name = component.value();
             }
-            Object o = clazz.newInstance();
-            if (StringUtils.isNotEmpty(name))
-            {
-                beanMap.put(name,o);
-            }else {
-                // 进行类名首字母小写放入map中
-                String simpleName = clazz.getSimpleName();
-                String s = CharUtil.toLowerCaseFirstOne(simpleName);
-                beanMap.put(s,o);
-            }
-
             // 当注解为@Mapper 注解的时候走cglib给接口进行实例
             if (annotation instanceof Mapper)
             {
@@ -224,6 +213,17 @@ public class DefaultBeanContext implements BeanContext
                 String s = CharUtil.toLowerCaseFirstOne(simpleName);
                 Object o1 = sqlAnnoHandler.executeSqlToBean(clazz);
                 beanMap.put(s,o1);
+            }else {
+                Object o = clazz.newInstance();
+                if (StringUtils.isNotEmpty(name))
+                {
+                    beanMap.put(name,o);
+                }else {
+                    // 进行类名首字母小写放入map中
+                    String simpleName = clazz.getSimpleName();
+                    String s = CharUtil.toLowerCaseFirstOne(simpleName);
+                    beanMap.put(s,o);
+                }
             }
 
 

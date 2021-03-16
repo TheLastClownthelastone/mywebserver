@@ -34,6 +34,7 @@ public abstract class AbstractExecutor <T> implements Executor<T>
                 t = doExecute(request);
             } catch (Exception e){
                 CommonResult error = CommonResult.error(e);
+                e.printStackTrace();
                 t = (T) HttpUtil.buildResponse(error);
             }
             return t;

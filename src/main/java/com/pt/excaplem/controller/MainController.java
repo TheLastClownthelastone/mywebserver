@@ -9,6 +9,8 @@ import com.pt.excaplem.bean.Man;
 import com.pt.excaplem.bean.User;
 import com.pt.excaplem.service.MainService;
 import com.pt.util.CommonResult;
+
+import java.util.List;
 @Controller
 @RequestMapping("/pt")
 public class MainController
@@ -35,17 +37,9 @@ public class MainController
         return CommonResult.success(value);
     }
 
-    @RequestMapping(value = "/calculateAge",method = SystemConstant.HttpMethod.POST)
-    public CommonResult<String> calculateAge(@RequestBody User user){
-        int i = user.getAge()*user.getNum();
-        return CommonResult.success(i);
-    }
-
-
-    @RequestMapping(value = "/excuteAdd",method = SystemConstant.HttpMethod.GET)
-    public CommonResult<String> excuteAdd(User user){
-        int i = user.getAge()*user.getNum();
-        return CommonResult.success(i);
+    @RequestMapping(value = "getAllUser",method = SystemConstant.HttpMethod.GET)
+    public CommonResult<List<User>> getAllUser(){
+        return CommonResult.success(mainService.getAllUser());
     }
 
 }

@@ -3,8 +3,8 @@ import lombok.Data;
 @Data
 public class User
 {
-    private int num;
+    private String id;
 
-    private int age;
+    private String name;
 
 }

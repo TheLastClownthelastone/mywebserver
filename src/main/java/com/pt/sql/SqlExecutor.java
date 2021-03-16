@@ -1,13 +1,9 @@
 package com.pt.sql;
-import cn.hutool.db.sql.SqlUtil;
-import com.mysql.cj.jdbc.util.ResultSetUtil;
 import com.pt.constant.SystemConstant;
-import com.pt.exception.PtException;
 import com.pt.util.SystemAssert;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
-import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
