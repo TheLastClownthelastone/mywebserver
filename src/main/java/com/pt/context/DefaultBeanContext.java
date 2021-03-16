@@ -89,34 +89,26 @@ public class DefaultBeanContext implements BeanContext
                     // 1.将对象赋值到map中
                     initBean(clazz);
                 }
-                for (Map.Entry<String, Object> entry : beanMap.entrySet())
+                // 2.依赖注入
+                injectAnnotation();
+
+                // 3.路由键记录
+                initRouterKey();
+
+                // 4. 加载配置文件中的值
+                initValue();
+
+                // 5.是否开启aspect
+                checkAspect();
+
+                // 6.扫描所有的定时任务
+                scanTimingTask();
+
+                if (taskList.size() > SystemConstant.IsInt.NO.getCode())
                 {
-                    Object bean = entry.getValue();
-                    if (bean != null)
-                    {
-                        // 2.依赖注入
-                        injectAnnotation(bean);
-
-                        // 3.路由键记录
-                        initRouterKey(bean);
-
-                        // 4. 加载配置文件中的值
-                        initValue(bean);
-
-                        // 5.是否开启aspect
-                        checkAspect(bean);
-
-                        // 6.扫描所有的定时任务
-                        scanTimingTask(bean);
-
-                        if (taskList.size() > SystemConstant.IsInt.NO.getCode())
-                        {
-                            // 存在定时任务的时候执行定时任务
-                            handler.handler(executor);
-                        }
-                    }
+                    // 存在定时任务的时候执行定时任务
+                    handler.handler(executor);
                 }
-
 
                 // 执行完之后设置标识
                 isInit = true;
@@ -127,13 +119,21 @@ public class DefaultBeanContext implements BeanContext
     /**
      * 进行依赖注入可以通过 set方法注入方式 可以通过成员变量注入的方式
      */
-    private static void injectAnnotation(Object bean) throws IntrospectionException, InvocationTargetException, IllegalAccessException
+    private static void injectAnnotation() throws IntrospectionException, InvocationTargetException, IllegalAccessException
     {
         log.info("【开始执行依赖注入】》》》》》》》》》》》》》");
-        // set方法注入
-        propertyAnnotation(bean);
-        // 属性注入
-        fieldAnnotation(bean);
+        for (Map.Entry<String, Object> entry : beanMap.entrySet())
+        {
+            Object bean = entry.getValue();
+            if (bean != null)
+            {
+                // set方法注入
+                propertyAnnotation(bean);
+                // 属性注入
+                fieldAnnotation(bean);
+            }
+
+        }
     }
     /**
      * 获取bean
@@ -315,10 +315,16 @@ public class DefaultBeanContext implements BeanContext
     /**
      * 初始化路由键
      */
-    private static void initRouterKey(Object value)
+    private static void initRouterKey()
     {
-        log.info("【开始初始化路由键》》】");
-        configRouter(value);
+        for (Map.Entry<String, Object> entry : beanMap.entrySet())
+        {
+            Object value = entry.getValue();
+            if (value != null)
+            {
+                configRouter(value);
+            }
+        }
     }
     /**
      * 将方法和类 跟路由进行配置
@@ -359,10 +365,16 @@ public class DefaultBeanContext implements BeanContext
     /**
      * 将配置文件中的内容注入到含有@Value对应的注解的属性中
      */
-    private static void initValue(Object value) throws IllegalAccessException
+    private static void initValue() throws IllegalAccessException
     {
-        log.info("【配置文件属性注入】>>>>>>>>>>>>>");
-        propertyInjection(value);
+        for (Map.Entry<String, Object> entry : beanMap.entrySet())
+        {
+            Object value = entry.getValue();
+            if (value != null)
+            {
+                propertyInjection(value);
+            }
+        }
 
     }
     /**
@@ -398,19 +410,25 @@ public class DefaultBeanContext implements BeanContext
     /**
      * 检查是否开启aop
      */
-    private static void checkAspect(Object value)
+    private static void checkAspect()
     {
-        log.info("【检查是否开启aspect】》》》》》》》》》》");
-        Class<?> aClass = value.getClass();
-        boolean annotationPresent = aClass.isAnnotationPresent(Aspect.class);
-        /**
-         * 判断一个是不是某个接口下面的实现
-         * 通过接口.class.isAssignableFrom(具体类的类型)
-         */
-        boolean assignableFrom = Advice.class.isAssignableFrom(aClass);
-        if (assignableFrom && annotationPresent)
+        for (Map.Entry<String, Object> entry : beanMap.entrySet())
         {
-            aspect = true;
+            Object value = entry.getValue();
+            if (value != null)
+            {
+                Class<?> aClass = value.getClass();
+                boolean annotationPresent = aClass.isAnnotationPresent(Aspect.class);
+                /**
+                 * 判断一个是不是某个接口下面的实现
+                 * 通过接口.class.isAssignableFrom(具体类的类型)
+                 */
+                boolean assignableFrom = Advice.class.isAssignableFrom(aClass);
+                if (assignableFrom && annotationPresent)
+                {
+                    aspect = true;
+                }
+            }
         }
     }
     /**
@@ -448,9 +466,15 @@ public class DefaultBeanContext implements BeanContext
     /**
      * 扫描定时任务
      */
-    private static void scanTimingTask(Object value){
-        log.info("【扫描定时任务】");
-        configTimingTask(value);
+    private static void scanTimingTask(){
+        for (Map.Entry<String, Object> entry : beanMap.entrySet())
+        {
+            Object value = entry.getValue();
+            if (value != null)
+            {
+                configTimingTask(value);
+            }
+        }
     }
     /**
      * 将所有的定时任务进行初始化操作
