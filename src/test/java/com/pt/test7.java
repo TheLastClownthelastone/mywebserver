@@ -1,6 +1,9 @@
 package com.pt;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Timer;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -97,6 +100,43 @@ public class test7
     }
 
 
+    @Test
+    public void test3(){
+        String hello = "Hello", lo = "lo";
+        System.out.println(hello == ("Hel"+lo));
+        System.out.println(hello == ("Hel"+lo).intern());
+        System.out.println(hello == ("Hel"+lo).toString());
+        System.out.println(hello == String.valueOf("Hel"+lo));
+    }
+
+    @Test
+    public void test4(){
+        String str = "<Target name=\"${0}\" dz10MV=\"${1}\" dz20MV=\"${2}\" dz30MV=\"${3}\" dz50MV=\"${4}\" ny10MV=\"${5}\" ny20MV=\"${6}\" ny30MV=\"${7}\"  ny50MV=\"${8}\" wd10MV=\"${9}\"/>";
+
+        List<String> strings = Arrays.asList("山地或地形复杂地区调增  0.133	0.112	0.105	0.103	0.157	0.132	0.125	0.126",
+                "高海拔地区调增  0.322	0.26	0.237	0.235	0.355	0.289	0.266	0.268",
+                "独立基础调增  0.188	0.181	0.188	0.188					             ",
+                "PHC 桩（桩长 5M）调增  0.41	0.403	0.41	0.372					             ",
+                "砖混大棚调增  				0.276	0.276	0.276	0.257	             ",
+                "混凝土屋面调增  								0.406                        "
+        );
+        for (String string : strings) {
+            String[] split = string.split("\\s+");
+
+            String rep = rep(str, split, 0);
+            System.out.println(rep);
+        }
+
+    }
+
+    private String rep(String string ,String[] split,int i){
+        String replace = string.replace("${" + i + "}", split[i]);
+        i++;
+        if (replace.contains("$")) {
+            return rep(replace,split,i);
+        }
+        return  replace;
+    }
 
 
 }

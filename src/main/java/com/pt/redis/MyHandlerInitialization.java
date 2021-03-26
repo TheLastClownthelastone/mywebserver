@@ -40,11 +40,17 @@ public class MyHandlerInitialization extends ChannelInitializer<Channel>
         this.handler = new MyRedisMessageHandler(this.latch);
         pipeline.addLast(this.handler);
     }
-
+    /**
+     * 修改latch的值
+     * @param latch
+     */
     public void resetLathc(CountDownLatch latch){
         handler.resetLatch(latch);
     }
-
+    /**
+     * 获取结果集
+     * @return
+     */
     public String getResult(){
         return handler.getResult();
     }

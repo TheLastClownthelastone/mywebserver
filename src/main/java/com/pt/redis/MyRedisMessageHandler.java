@@ -82,7 +82,7 @@ public class MyRedisMessageHandler extends ChannelDuplexHandler
             }
             this.result = sb.toString();
         }
-
+        // 进行减一操作，知道为零的时候主线程停止阻塞
         latch.countDown();
     }
 
@@ -90,11 +90,17 @@ public class MyRedisMessageHandler extends ChannelDuplexHandler
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         System.out.println("执行异常了 :"+cause.getMessage());
     }
-
+    /**
+     * 修改CountDownLatch
+     * @param latch
+     */
     public void resetLatch(CountDownLatch latch){
         this.latch = latch;
     }
-
+    /**
+     * 获取结果集
+     * @return
+     */
     public String getResult(){
         return this.result;
     }
