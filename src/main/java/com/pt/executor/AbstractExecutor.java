@@ -42,6 +42,13 @@ public abstract class AbstractExecutor <T> implements Executor<T>
             return doExecute(request);
         }
     }
+
+    /**
+     * 增加子类中异步实现
+     * @param promise
+     * @param request
+     * @return
+     */
     @Override
     public Future<T> asyncExecute(Promise<T> promise, Object... request)
     {
