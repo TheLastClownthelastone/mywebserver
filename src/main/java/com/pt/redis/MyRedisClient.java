@@ -55,6 +55,9 @@ public class MyRedisClient
 
     }
 
+    /**
+     * 创建redis连接
+     */
     public void conn(){
         try
         {
@@ -68,6 +71,10 @@ public class MyRedisClient
         }
     }
 
+    /**
+     * 获取cf对象
+     * @return
+     */
     public ChannelFuture getChannelFuture(){
         if (this.cf == null)
         {
@@ -80,7 +87,12 @@ public class MyRedisClient
         return this.cf;
     }
 
-
+    /**
+     * redis客户端发送数据
+     * @param message
+     * @return
+     * @throws InterruptedException
+     */
     public String sendMessage(String message) throws InterruptedException
     {
         ChannelFuture channelFuture = getInstance().getChannelFuture();
