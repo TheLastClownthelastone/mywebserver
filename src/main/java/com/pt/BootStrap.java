@@ -1,5 +1,6 @@
 package com.pt;
 import com.pt.annotation.EnableRedisService;
+import com.pt.annotation.IgnoreSql;
 import com.pt.server.NettyHttpServer;
 import com.pt.server.Server;
 
@@ -10,6 +11,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 
 @EnableRedisService
+@IgnoreSql
 public class BootStrap
 {
     public static void main(String[] args) throws InvocationTargetException, IntrospectionException, InstantiationException, IllegalAccessException

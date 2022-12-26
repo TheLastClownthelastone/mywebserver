@@ -1,10 +1,6 @@
 package com.pt.init;
 import cn.hutool.core.lang.ClassScaner;
-import com.pt.annotation.Component;
-import com.pt.annotation.Controller;
-import com.pt.annotation.EnableRedisService;
-import com.pt.annotation.Mapper;
-import com.pt.annotation.Service;
+import com.pt.annotation.*;
 import com.pt.context.DefaultBeanContext;
 import lombok.extern.slf4j.Slf4j;
 
@@ -63,8 +59,11 @@ public class InitExecutor
             }
             // 是否开启redis服务
             boolean isOpenRedis = clazz.isAnnotationPresent(EnableRedisService.class);
+
+            // 是否开启mysql服务
+            boolean ignoreSql = clazz.isAnnotationPresent(IgnoreSql.class);
             // 初始化上下文
-            DefaultBeanContext.doInt(result,isOpenRedis);
+            DefaultBeanContext.doInt(result,isOpenRedis,ignoreSql);
         }
     }
 

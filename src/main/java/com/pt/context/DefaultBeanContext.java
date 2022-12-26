@@ -69,7 +69,7 @@ public class DefaultBeanContext implements BeanContext
     private DefaultBeanContext(){}
 
 
-    private static SqlAnnoHandler sqlAnnoHandler = SqlAnnoHandler.getInstance();
+
 
 
     /**
@@ -80,7 +80,7 @@ public class DefaultBeanContext implements BeanContext
      * 执行改方法之后将class模板锁住不让多线程下出现同时修改出现的问题
      * 增加全局
      */
-    public static void doInt(Set<Class<?>> clazzs,boolean isOpenRedis) throws InstantiationException, IllegalAccessException, IntrospectionException, InvocationTargetException
+    public static void doInt(Set<Class<?>> clazzs,boolean isOpenRedis,boolean ignoreSql) throws InstantiationException, IllegalAccessException, IntrospectionException, InvocationTargetException
     {
         synchronized (DefaultBeanContext.class){
             if (!isInit)
@@ -88,7 +88,7 @@ public class DefaultBeanContext implements BeanContext
                 for (Class<?> clazz : clazzs)
                 {
                     // 1.将对象赋值到map中
-                    initBean(clazz,isOpenRedis);
+                    initBean(clazz,isOpenRedis,ignoreSql);
                 }
                 for (Map.Entry<String, Object> entry : beanMap.entrySet())
                 {
@@ -185,7 +185,7 @@ public class DefaultBeanContext implements BeanContext
      * 初始化bean
      * @param clazz
      */
-    private static void initBean(Class<?> clazz,boolean isOpenRedis) throws IllegalAccessException, InstantiationException
+    private static void initBean(Class<?> clazz,boolean isOpenRedis,boolean ignoreSql) throws IllegalAccessException, InstantiationException
     {
         log.info("【初始化bean】。。。。。。。。。。");
         List<Annotation> annotations = Arrays.asList(clazz.getAnnotations());
@@ -213,23 +213,26 @@ public class DefaultBeanContext implements BeanContext
                 Component component = ((Component) annotation);
                 name = component.value();
             }
-            // 当注解为@Mapper 注解的时候走cglib给接口进行实例
-            if (annotation instanceof Mapper)
-            {
-                String simpleName = clazz.getSimpleName();
-                String s = CharUtil.toLowerCaseFirstOne(simpleName);
-                Object o1 = sqlAnnoHandler.executeSqlToBean(clazz);
-                beanMap.put(s,o1);
-            }else {
-                Object o = clazz.newInstance();
-                if (StringUtils.isNotEmpty(name))
+            if (!ignoreSql) {
+                SqlAnnoHandler sqlAnnoHandler = SqlAnnoHandler.getInstance();
+                // 当注解为@Mapper 注解的时候走cglib给接口进行实例
+                if (annotation instanceof Mapper)
                 {
-                    beanMap.put(name,o);
-                }else {
-                    // 进行类名首字母小写放入map中
                     String simpleName = clazz.getSimpleName();
                     String s = CharUtil.toLowerCaseFirstOne(simpleName);
-                    beanMap.put(s,o);
+                    Object o1 = sqlAnnoHandler.executeSqlToBean(clazz);
+                    beanMap.put(s,o1);
+                }else {
+                    Object o = clazz.newInstance();
+                    if (StringUtils.isNotEmpty(name))
+                    {
+                        beanMap.put(name,o);
+                    }else {
+                        // 进行类名首字母小写放入map中
+                        String simpleName = clazz.getSimpleName();
+                        String s = CharUtil.toLowerCaseFirstOne(simpleName);
+                        beanMap.put(s,o);
+                    }
                 }
             }
         }
